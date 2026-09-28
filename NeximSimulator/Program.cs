@@ -21,9 +21,18 @@ try
             Console.WriteLine("SETEV y STARTEV completados. Estado: recepción.");
             if (!initialization.Events.TryGetValue("PARTSUSAGE", out bool requiresAck) || !requiresAck)
                 throw new IOException("La prueba requiere una suscripción SETEV a PARTSUSAGE con ACK=1.");
+            if (!initialization.Events.TryGetValue("PDERROR", out bool pdErrorRequiresAck) || !pdErrorRequiresAck)
+                throw new IOException("La prueba requiere una suscripción SETEV a PDERROR con ACK=1.");
             await PartsUsageScenario.RunAsync(stream, cancellation.Token);
             Console.WriteLine("PARTSUSAGE_ACK recibido y validado: SeqID=1001.");
-            Console.WriteLine("Conexi\u00f3n mantenida. Estado: recepci\u00f3n; KEEPALIVE cada 10 segundos.");
+            await PdErrorScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("PRODSTARTED", out bool prodStartedRequiresAck) || !prodStartedRequiresAck)
+                throw new IOException("La prueba requiere una suscripción SETEV a PRODSTARTED con ACK=1.");
+            await ProdStartedScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("PRODCOMPLETEDII", out bool prodCompletedIIRequiresAck) || !prodCompletedIIRequiresAck)
+                throw new IOException("La prueba requiere una suscripción SETEV a PRODCOMPLETEDII con ACK=1.");
+            await ProdCompletedIIScenario.RunAsync(stream, cancellation.Token);
+            Console.WriteLine("Conexi\u00f3n mantenida. Estado: recepci\u00f3n; KEEPALIVE cada 120 segundos.");
             await KeepAliveSession.RunAsync(stream, cancellation.Token);
         }
         catch (Exception exception) when (!cancellation.IsCancellationRequested)

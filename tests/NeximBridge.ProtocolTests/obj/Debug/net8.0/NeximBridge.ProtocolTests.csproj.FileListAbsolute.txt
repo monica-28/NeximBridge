@@ -12,3 +12,4 @@ C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.ProtocolTe
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.ProtocolTests\obj\Debug\net8.0\NeximBridge.ProtocolTests.pdb
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.ProtocolTests\obj\Debug\net8.0\NeximBridge.ProtocolTests.genruntimeconfig.cache
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.ProtocolTests\obj\Debug\net8.0\ref\NeximBridge.ProtocolTests.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.ProtocolTests\obj\Debug\net8.0\NeximBridge.ProtocolTests.sourcelink.json

@@ -80,3 +80,4 @@ C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.PartsUsage
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.PartsUsageTests\obj\Debug\net8.0-windows\NeximBridge.PartsUsageTests.pdb
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.PartsUsageTests\obj\Debug\net8.0-windows\NeximBridge.PartsUsageTests.genruntimeconfig.cache
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.PartsUsageTests\obj\Debug\net8.0-windows\ref\NeximBridge.PartsUsageTests.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\tests\NeximBridge.PartsUsageTests\obj\Debug\net8.0-windows\NeximBridge.PartsUsageTests.sourcelink.json

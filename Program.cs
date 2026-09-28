@@ -21,7 +21,15 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<NeximAckBuilder>();
         services.AddSingleton<PartsUsageAckSender>();
 		services.AddSingleton<PdErrorHandler>();
+        services.AddSingleton<IPdErrorRepository>(provider => provider.GetRequiredService<NeximRepository>());
+        services.AddSingleton<PdErrorAckSender>();
 		services.AddSingleton<ProductionHandler>();
+        services.AddSingleton<IProdStartedRepository>(provider => provider.GetRequiredService<NeximRepository>());
+        services.AddSingleton<ProdStartedHandler>();
+        services.AddSingleton<IProdCompletedIIRepository>(provider => provider.GetRequiredService<NeximRepository>());
+        services.AddSingleton<ProdCompletedIIHandler>();
+        services.AddSingleton<ProdCompletedIIAckSender>();
+        services.AddSingleton<ProdStartedAckSender>();
 		services.AddSingleton<ComponentHandler>();
 		services.AddSingleton<AlarmAndRecoveryHandler>();
 		services.AddSingleton<NeximFrameReader>();

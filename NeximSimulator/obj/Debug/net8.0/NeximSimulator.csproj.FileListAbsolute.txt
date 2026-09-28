@@ -12,3 +12,4 @@ C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.pdb
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.genruntimeconfig.cache
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\ref\NeximSimulator.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.sourcelink.json

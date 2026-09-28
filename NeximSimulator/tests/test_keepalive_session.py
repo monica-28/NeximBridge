@@ -56,13 +56,19 @@ def read(peer):
 
 
 def connect_and_ack_partsusage():
-    peer = socket.create_connection(("127.0.0.1", 30040), timeout=15)
-    send(peer, "SETEV\t1\t\t1\rPARTSUSAGE\t1\r")
+    peer = socket.create_connection(("127.0.0.1", 30040), timeout=130)
+    send(peer, "SETEV\t1\t\t4\rPARTSUSAGE\t1\rPDERROR\t1\rPRODSTARTED\t1\rPRODCOMPLETEDII\t1\r")
     assert read(peer) == "SETEV_ACK\t1\t\t0"
     send(peer, "STARTEV\t2\t")
     assert read(peer) == "STARTEV_ACK\t2\t\t0"
     assert read(peer).startswith("PARTSUSAGE\t1001\t")
     send(peer, "PARTSUSAGE_ACK\t1001\t0\tNXT1\t1\t1\tTESTJOB_T\t10001")
+    assert read(peer).startswith("PDERROR\t1002\t")
+    send(peer, "PDERROR_ACK\t1002\t0\tNXT1\t1\t1\tTESTJOB_T")
+    assert read(peer).startswith("PRODSTARTED\t1003\t")
+    send(peer, "PRODSTARTED_ACK\t1003\t0\tNXT1\t1\t1\t0\tTESTJOB_T\t10002")
+    assert read(peer).startswith("PRODCOMPLETEDII\t1004\t")
+    send(peer, "PRODCOMPLETEDII_ACK\t1004\t0\tNXT1\t1\t1\t0\tTESTJOB_T\t10002")
     return peer
 
 
@@ -71,10 +77,10 @@ try:
     with connect_and_ack_partsusage() as peer:
         wait_log("PARTSUSAGE_ACK recibido")
         wait_log("mantenida")
-        for seq in (1002, 1003):
+        for seq in (1005, 1006):
             started = time.monotonic()
             assert read(peer) == f"KEEPALIVE\t{seq}", "Unexpected repeated PARTSUSAGE or wrong heartbeat"
-            assert time.monotonic() - started >= 9.5, "KEEPALIVE interval is not 10 seconds"
+            assert time.monotonic() - started >= 119.5, "KEEPALIVE interval is not 120 seconds"
             send(peer, f"KEEPALIVE_ACK\t{seq}")
             wait_log(f"KEEPALIVE_ACK validado: SeqID={seq}")
         assert sum("TX PARTSUSAGE:" in line for line in lines) == 1
@@ -83,15 +89,15 @@ try:
     print("PASS persistent session, two KEEPALIVEs, one PARTSUSAGE, idle disconnect", flush=True)
 
     with connect_and_ack_partsusage() as peer:
-        assert read(peer) == "KEEPALIVE\t1002"
+        assert read(peer) == "KEEPALIVE\t1005"
         checkpoint = len(lines)
         send(peer, "KEEPALIVE_ACK\t9999")
         assert peer.recv(1) == b"", "Invalid SeqID accepted"
-        wait_log("se esperaba KEEPALIVE_ACK y SeqID=1002", checkpoint)
+        wait_log("se esperaba KEEPALIVE_ACK y SeqID=1005", checkpoint)
     print("PASS incorrect KEEPALIVE_ACK rejected; new client accepted", flush=True)
 
     with connect_and_ack_partsusage() as peer:
-        assert read(peer) == "KEEPALIVE\t1002"
+        assert read(peer) == "KEEPALIVE\t1005"
         checkpoint = len(lines)
         peer.settimeout(35)
         assert peer.recv(1) == b"", "ACK timeout not enforced"

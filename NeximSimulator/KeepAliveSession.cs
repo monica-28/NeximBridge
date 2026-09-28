@@ -10,7 +10,7 @@ internal static class KeepAliveSession
         using CancellationTokenSource session = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         NeximFrameReader reader = new();
         Task<string>? receive = null;
-        int sequence = 1001; // PARTSUSAGE already used this sequence ID.
+        int sequence = 1004; // 1004 = PRODCOMPLETEDII; first KEEPALIVE = 1005.
         try
         {
             while (!session.IsCancellationRequested)
@@ -18,7 +18,7 @@ internal static class KeepAliveSession
                 // One reader remains active even between KEEPALIVEs so a client
                 // disconnect is observed immediately, without closing a healthy session.
                 receive = reader.ReadMessageAsync(stream, session.Token);
-                Task interval = Task.Delay(TimeSpan.FromSeconds(10), session.Token);
+                Task interval = Task.Delay(TimeSpan.FromSeconds(120), session.Token);
                 if (await Task.WhenAny(receive, interval) == receive)
                 {
                     string unexpected = await receive;

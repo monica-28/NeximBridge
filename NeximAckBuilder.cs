@@ -50,6 +50,37 @@ public sealed class NeximAckBuilder
         }
 
         string resultText = result.ToString(CultureInfo.InvariantCulture);
+        if (message.EventName == "PRODCOMPLETEDII")
+        {
+            if (message.Fields.Count < 10)
+                throw new NeximAckException("PRODCOMPLETEDII no contiene la cabecera necesaria para confirmar el evento.");
+            string[] fields = ["PRODCOMPLETEDII_ACK", message.SeqID, resultText,
+                message.Fields[4], message.Fields[5], message.Fields[6], message.Fields[7], message.Fields[8], message.Fields[9]];
+            if (fields.Any(field => field.Any(char.IsControl)))
+                throw new NeximAckException("Los campos de PRODCOMPLETEDII_ACK no pueden contener caracteres de control.");
+            return NeximInitializationProtocol.Frame(string.Join(FieldSeparator, fields));
+        }
+        if (message.EventName == "PRODSTARTED")
+        {
+            if (message.Fields.Count < 10)
+                throw new NeximAckException("PRODSTARTED no contiene la cabecera necesaria para confirmar el evento.");
+            string[] fields = ["PRODSTARTED_ACK", message.SeqID, resultText,
+                message.Fields[4], message.Fields[5], message.Fields[6], message.Fields[7], message.Fields[8], message.Fields[9]];
+            if (fields.Any(field => field.Any(char.IsControl)))
+                throw new NeximAckException("Los campos de PRODSTARTED_ACK no pueden contener caracteres de control.");
+            return NeximInitializationProtocol.Frame(string.Join(FieldSeparator, fields));
+        }
+        if (message.EventName == "PDERROR")
+        {
+            // Fuji 4.52.2, p. 154: seven fields. There is NO PanelNo in this ACK.
+            if (message.Fields.Count < 8)
+                throw new NeximAckException("PDERROR no contiene la cabecera necesaria para confirmar el evento.");
+            string[] fields = ["PDERROR_ACK", message.SeqID, resultText,
+                message.Fields[4], message.Fields[5], message.Fields[6], message.Fields[7]];
+            if (fields.Any(field => field.Any(char.IsControl)))
+                throw new NeximAckException("Los campos de PDERROR_ACK no pueden contener caracteres de control.");
+            return NeximInitializationProtocol.Frame(string.Join(FieldSeparator, fields));
+        }
         if (message.EventName == "PARTSUSAGE")
         {
             // Fuji 4.32.2: echo the header, even when detail parsing failed.

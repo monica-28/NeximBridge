@@ -84,3 +84,4 @@ C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\ref
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\NeximBridge.pdb
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\NeximBridge.genruntimeconfig.cache
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\ref\NeximBridge.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\NeximBridge.sourcelink.json

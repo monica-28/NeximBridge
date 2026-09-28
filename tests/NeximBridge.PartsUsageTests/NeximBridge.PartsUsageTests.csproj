@@ -17,5 +17,20 @@
     <Compile Include="../../NeximRepository.cs" Link="Production/NeximRepository.cs" />
     <Compile Include="../../NeximRepository.PartsUsage.cs" Link="Production/NeximRepository.PartsUsage.cs" />
     <Compile Include="../../NeximMessageParser.cs" Link="Production/NeximMessageParser.cs" />
+    <Compile Include="../../PdErrorParser.cs" Link="Production/PdErrorParser.cs" />
+    <Compile Include="../../PdErrorHandler.cs" Link="Production/PdErrorHandler.cs" />
+    <Compile Include="../../PdErrorAckSender.cs" Link="Production/PdErrorAckSender.cs" />
+    <Compile Include="../../IPdErrorRepository.cs" Link="Production/IPdErrorRepository.cs" />
+    <Compile Include="../../NeximRepository.PdError.cs" Link="Production/NeximRepository.PdError.cs" />
+    <Compile Include="../../ProdStartedParser.cs" Link="Production/ProdStartedParser.cs" />
+    <Compile Include="../../ProdStartedHandler.cs" Link="Production/ProdStartedHandler.cs" />
+    <Compile Include="../../ProdStartedAckSender.cs" Link="Production/ProdStartedAckSender.cs" />
+    <Compile Include="../../IProdStartedRepository.cs" Link="Production/IProdStartedRepository.cs" />
+    <Compile Include="../../NeximRepository.ProdStarted.cs" Link="Production/NeximRepository.ProdStarted.cs" />
+    <Compile Include="../../ProdCompletedIIParser.cs" Link="Production/ProdCompletedIIParser.cs" />
+    <Compile Include="../../ProdCompletedIIHandler.cs" Link="Production/ProdCompletedIIHandler.cs" />
+    <Compile Include="../../ProdCompletedIIAckSender.cs" Link="Production/ProdCompletedIIAckSender.cs" />
+    <Compile Include="../../IProdCompletedIIRepository.cs" Link="Production/IProdCompletedIIRepository.cs" />
+    <Compile Include="../../NeximRepository.ProdCompletedII.cs" Link="Production/NeximRepository.ProdCompletedII.cs" />
   </ItemGroup>
 </Project>
