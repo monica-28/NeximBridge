@@ -32,6 +32,9 @@ try
             if (!initialization.Events.TryGetValue("PRODCOMPLETEDII", out bool prodCompletedIIRequiresAck) || !prodCompletedIIRequiresAck)
                 throw new IOException("La prueba requiere una suscripción SETEV a PRODCOMPLETEDII con ACK=1.");
             await ProdCompletedIIScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("PRODSTOPPED", out bool prodStoppedRequiresAck) || !prodStoppedRequiresAck)
+                throw new IOException("La prueba requiere una suscripción SETEV a PRODSTOPPED con ACK=1.");
+            await ProdStoppedScenario.RunAsync(stream, cancellation.Token);
             Console.WriteLine("Conexi\u00f3n mantenida. Estado: recepci\u00f3n; KEEPALIVE cada 120 segundos.");
             await KeepAliveSession.RunAsync(stream, cancellation.Token);
         }

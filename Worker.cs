@@ -14,7 +14,8 @@ public sealed class Worker(
     PartsUsageAckSender partsUsageAckSender,
     PdErrorHandler pdErrorHandler,
     PdErrorAckSender pdErrorAckSender,
-    ProductionHandler productionHandler,
+    ProdStoppedHandler prodStoppedHandler,
+    ProdStoppedAckSender prodStoppedAckSender,
     ProdCompletedIIHandler prodCompletedIIHandler,
     ProdCompletedIIAckSender prodCompletedIIAckSender,
     ProdStartedHandler prodStartedHandler,
@@ -182,9 +183,33 @@ public sealed class Worker(
                     continue;
                 }
 
-                if (message.EventName is "PRODSTOPPED")
+                if (string.Equals(message.EventName, "PRODSTOPPED", StringComparison.Ordinal))
                 {
-                    await productionHandler.HandleAsync(message, stoppingToken);
+                    try
+                    {
+                        long rawEventId = await repository.InsertRawEvent(
+                            message.EventName, message.SeqID, message.RawMessage,
+                            DateTimeOffset.UtcNow, "PENDING", stoppingToken);
+                        await prodStoppedHandler.HandleAsync(message, rawEventId, stoppingToken);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            if (networkStream.CanWrite)
+                            {
+                                using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
+                                await prodStoppedAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
+                            }
+                        }
+                        catch (Exception ackException)
+                        {
+                            logger.LogError(ackException, "No se pudo enviar PRODSTOPPED_ACK Result=1, SeqID={SeqID}.", message.SeqID);
+                        }
+                        throw;
+                    }
+                    // A failed ACK write does not turn a committed event into a rejection.
+                    await prodStoppedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
                     continue;
                 }
 

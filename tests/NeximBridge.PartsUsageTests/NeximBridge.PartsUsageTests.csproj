@@ -32,5 +32,10 @@
     <Compile Include="../../ProdCompletedIIAckSender.cs" Link="Production/ProdCompletedIIAckSender.cs" />
     <Compile Include="../../IProdCompletedIIRepository.cs" Link="Production/IProdCompletedIIRepository.cs" />
     <Compile Include="../../NeximRepository.ProdCompletedII.cs" Link="Production/NeximRepository.ProdCompletedII.cs" />
+    <Compile Include="../../ProdStoppedParser.cs" Link="Production/ProdStoppedParser.cs" />
+    <Compile Include="../../ProdStoppedHandler.cs" Link="Production/ProdStoppedHandler.cs" />
+    <Compile Include="../../ProdStoppedAckSender.cs" Link="Production/ProdStoppedAckSender.cs" />
+    <Compile Include="../../IProdStoppedRepository.cs" Link="Production/IProdStoppedRepository.cs" />
+    <Compile Include="../../NeximRepository.ProdStopped.cs" Link="Production/NeximRepository.ProdStopped.cs" />
   </ItemGroup>
 </Project>

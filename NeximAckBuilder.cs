@@ -50,6 +50,16 @@ public sealed class NeximAckBuilder
         }
 
         string resultText = result.ToString(CultureInfo.InvariantCulture);
+        if (message.EventName == "PRODSTOPPED")
+        {
+            if (message.Fields.Count < 12)
+                throw new NeximAckException("PRODSTOPPED no contiene la cabecera necesaria para confirmar el evento.");
+            string[] fields = ["PRODSTOPPED_ACK", message.SeqID, resultText,
+                message.Fields[4], message.Fields[5], message.Fields[6], message.Fields[7], message.Fields[8], message.Fields[9], message.Fields[10], message.Fields[11]];
+            if (fields.Any(field => field.Any(char.IsControl)))
+                throw new NeximAckException("Los campos de PRODSTOPPED_ACK no pueden contener caracteres de control.");
+            return NeximInitializationProtocol.Frame(string.Join(FieldSeparator, fields));
+        }
         if (message.EventName == "PRODCOMPLETEDII")
         {
             if (message.Fields.Count < 10)

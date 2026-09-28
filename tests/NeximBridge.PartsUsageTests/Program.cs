@@ -13,6 +13,7 @@ tests.AddRange(AckTests.Cases(body));
 tests.AddRange(PdErrorTests.Cases(args.Contains("--sql")));
 tests.AddRange(ProdStartedTests.Cases(args.Contains("--sql")));
 tests.AddRange(ProdCompletedIITests.Cases(args.Contains("--sql")));
+tests.AddRange(ProdStoppedTests.Cases(args.Contains("--sql")));
 void Test(string name, Func<Task> run) => tests.Add((name, run));
 ParsedNeximMessage Message(string? text = null) => new NeximMessageParser().Parse(text ?? body);
 

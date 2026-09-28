@@ -28,6 +28,9 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ProdStartedHandler>();
         services.AddSingleton<IProdCompletedIIRepository>(provider => provider.GetRequiredService<NeximRepository>());
         services.AddSingleton<ProdCompletedIIHandler>();
+        services.AddSingleton<IProdStoppedRepository>(provider => provider.GetRequiredService<NeximRepository>());
+        services.AddSingleton<ProdStoppedHandler>();
+        services.AddSingleton<ProdStoppedAckSender>();
         services.AddSingleton<ProdCompletedIIAckSender>();
         services.AddSingleton<ProdStartedAckSender>();
 		services.AddSingleton<ComponentHandler>();
