@@ -1,0 +1,14 @@
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\bin\Debug\net8.0\NeximSimulator.exe
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\bin\Debug\net8.0\NeximSimulator.deps.json
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\bin\Debug\net8.0\NeximSimulator.runtimeconfig.json
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\bin\Debug\net8.0\NeximSimulator.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\bin\Debug\net8.0\NeximSimulator.pdb
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.AssemblyInfoInputs.cache
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.AssemblyInfo.cs
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.csproj.CoreCompileInputs.cache
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\refint\NeximSimulator.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.pdb
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\NeximSimulator.genruntimeconfig.cache
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\NeximSimulator\obj\Debug\net8.0\ref\NeximSimulator.dll

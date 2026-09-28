@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../NeximFrameReader.cs" Link="Shared/NeximFrameReader.cs" />
+    <Compile Include="../../NeximSetEventBuilder.cs" Link="Shared/NeximSetEventBuilder.cs" />
+    <Compile Include="../../NeximStartEventBuilder.cs" Link="Shared/NeximStartEventBuilder.cs" />
+    <Compile Include="../../NeximInitializationProtocol.cs" Link="Shared/NeximInitializationProtocol.cs" />
+    <Compile Include="../../NeximSessionInitializer.cs" Link="Shared/NeximSessionInitializer.cs" />
+    <Compile Include="../../NeximSimulator/SimulatorInitialization.cs" Link="Simulator/SimulatorInitialization.cs" />
+  </ItemGroup>
+</Project>
