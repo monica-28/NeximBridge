@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Reflection;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Data.SqlClient;
@@ -25,6 +26,51 @@ internal static class DeduplicationTests
 
     public static IEnumerable<(string Name, Func<Task> Run)> Cases()
     {
+        foreach (bool requiresAck in new[] { true, false })
+            yield return ($"Retransmission across TCP reconnection Ack={requiresAck}: one RAW, one normalized batch", async () =>
+            {
+                string body = Bodies[requiresAck ? "PARTSUSAGE" : "LOADCOMPIV"];
+                Database db = new(); Repository repo = new(db);
+                PartsStore parts = new(db, false); LoadStore load = new(db);
+                using TcpListener listener = ConnectionTests.Listen();
+                var config = ConnectionTests.Config(ConnectionTests.Port(listener));
+                using NeximTcpClientService tcp = new(config, NullLogger<NeximTcpClientService>.Instance);
+                TestLog processingLog = new(); var processor = new NeximEventProcessor(repo, processingLog);
+                using Worker worker = ConnectionTests.CreateWorker(tcp, config, NullLogger<Worker>.Instance, processor,
+                    new(parts, NullLogger<PartsUsageHandler>.Instance), new(load, NullLogger<LoadCompIVHandler>.Instance));
+                using CancellationTokenSource deadline = new(TimeSpan.FromSeconds(20));
+                await tcp.StartAsync(default); await worker.StartAsync(default);
+                try
+                {
+                    using (TcpClient first = await listener.AcceptTcpClientAsync(deadline.Token))
+                    {
+                        await ConnectionTests.Handshake(first.GetStream(), deadline.Token);
+                        await first.GetStream().WriteAsync(NeximInitializationProtocol.Frame(body), deadline.Token);
+                        await ConnectionTests.Until(() => db.Rows.Count == 1 && db.Rows[0].Status == "PROCESSED", deadline.Token);
+                        // Discard the first ACK rather than relying on its arrival; persistence is already complete.
+                    }
+                    using TcpClient second = await listener.AcceptTcpClientAsync(deadline.Token);
+                    await ConnectionTests.Handshake(second.GetStream(), deadline.Token);
+                    await second.GetStream().WriteAsync(NeximInitializationProtocol.Frame(body), deadline.Token);
+                    if (requiresAck)
+                    {
+                        string ack = await new NeximFrameReader().ReadMessageAsync(second.GetStream(), deadline.Token);
+                        byte[] expected = new NeximAckBuilder().Build(Message(body));
+                        Equal(Encoding.UTF8.GetString(expected, 5, expected.Length - 6), ack);
+                    }
+                    else
+                    {
+                        await ConnectionTests.Until(() => db.Operations.Count(op => op == "SELECT") == 1, deadline.Token);
+                        using CancellationTokenSource noAck = new(TimeSpan.FromMilliseconds(200));
+                        Check(await Failure(new NeximFrameReader().ReadMessageAsync(second.GetStream(), noAck.Token)) is OperationCanceledException,
+                            "Monitoring event sent an ACK or closed session");
+                    }
+                    Equal(1, db.Rows.Count); Equal(body, db.Rows[0].Raw); Equal("PROCESSED", db.Rows[0].Status);
+                    Equal(1, requiresAck ? parts.Details.Count : load.Details);
+                    Check(processingLog.Lines.Any(line => line.Text.StartsWith("Duplicate event ignored")), "Not detected as duplicate");
+                }
+                finally { await worker.StopAsync(deadline.Token); await tcp.StopAsync(deadline.Token); }
+            });
         yield return ("Hash: SHA256 exact UTF-8, 32 bytes and stable", () =>
         {
             const string raw = " MCALARMON\t1\rMáquina\r\n ";
@@ -373,5 +419,13 @@ internal static class DeduplicationTests
             database.Rows.Single(row => row.Id == id).Status = status;
             return Task.CompletedTask;
         }
+    }
+    private sealed class LoadStore(Database database) : ILoadCompIVRepository
+    {
+        public int Details;
+        public Task InsertLoadCompIVDetails(long id, LoadCompIVData data, CancellationToken cancellationToken = default)
+        { Details += data.Details.Count; return Task.CompletedTask; }
+        public Task UpdateRawEventStatus(long id, string status, CancellationToken cancellationToken = default)
+        { database.Rows.Single(row => row.Id == id).Status = status; return Task.CompletedTask; }
     }
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NeximBridge.PartsUsageTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+37fd339579023fcb64346b252f5b4e9b9ca94245")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea62a4ccbfe5316bbf26c22eac0077f5c748ffc5")]
 [assembly: System.Reflection.AssemblyProductAttribute("NeximBridge.PartsUsageTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NeximBridge.PartsUsageTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

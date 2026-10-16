@@ -1,3 +1,4 @@
+global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Logging;
 using Microsoft.Data.SqlClient;
@@ -12,6 +13,7 @@ List<(string Name, Func<Task> Run)> tests = [];
 tests.AddRange(AckTests.Cases(body));
 tests.AddRange(RemainingEventsTests.Cases());
 tests.AddRange(DeduplicationTests.Cases());
+tests.AddRange(ConnectionTests.Cases());
 tests.AddRange(PdErrorTests.Cases(args.Contains("--sql")));
 tests.AddRange(ProdStartedTests.Cases(args.Contains("--sql")));
 tests.AddRange(ProdCompletedIITests.Cases(args.Contains("--sql")));

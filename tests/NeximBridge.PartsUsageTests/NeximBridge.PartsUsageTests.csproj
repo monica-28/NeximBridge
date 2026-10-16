@@ -68,5 +68,11 @@
     <Compile Include="../../RawEventDeduplication.cs" Link="Production/RawEventDeduplication.cs" />
     <Compile Include="../../NeximRepository.RawDeduplication.cs" Link="Production/NeximRepository.RawDeduplication.cs" />
     <Compile Include="../../NeximEventProcessor.cs" Link="Production/NeximEventProcessor.cs" />
+    <Compile Include="../../NeximFrameReader.cs" Link="Production/NeximFrameReader.cs" />
+    <Compile Include="../../NeximTcpClientService.cs" Link="Production/NeximTcpClientService.cs" />
+    <Compile Include="../../NeximSessionInitializer.cs" Link="Production/NeximSessionInitializer.cs" />
+    <Compile Include="../../NeximStartEventBuilder.cs" Link="Production/NeximStartEventBuilder.cs" />
+    <Compile Include="../../NeximKeepAliveAckBuilder.cs" Link="Production/NeximKeepAliveAckBuilder.cs" />
+    <Compile Include="../../Worker.cs" Link="Production/Worker.cs" />
   </ItemGroup>
 </Project>
