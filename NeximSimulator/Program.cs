@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using NeximBridge;
 using NeximSimulator;
 
+bool dedupTest = args.Contains("--dedup-test", StringComparer.Ordinal);
 using CancellationTokenSource cancellation = new();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
 using TcpListener listener = new(IPAddress.Loopback, 30040);
@@ -19,6 +20,12 @@ try
             SimulatorInitialization initialization = new();
             await initialization.RunAsync(stream, TimeSpan.FromSeconds(10), cancellation.Token);
             Console.WriteLine("SETEV y STARTEV completados. Estado: recepción.");
+            if (dedupTest)
+            {
+                await DedupTestScenario.RunAsync(stream, initialization.Events, cancellation.Token);
+                // This opt-in test is one session only; do not enter normal scenarios or KEEPALIVE.
+                break;
+            }
             if (!initialization.Events.TryGetValue("PARTSUSAGE", out bool requiresAck) || !requiresAck)
                 throw new IOException("La prueba requiere una suscripción SETEV a PARTSUSAGE con ACK=1.");
             if (!initialization.Events.TryGetValue("PDERROR", out bool pdErrorRequiresAck) || !pdErrorRequiresAck)
@@ -56,6 +63,11 @@ try
         catch (Exception exception) when (!cancellation.IsCancellationRequested)
         {
             Console.WriteLine($"Sesión cerrada: {exception.Message}");
+            if (dedupTest)
+            {
+                Environment.ExitCode = 1;
+                break;
+            }
         }
     }
 }
