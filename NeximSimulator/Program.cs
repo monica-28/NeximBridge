@@ -4,6 +4,7 @@ using NeximBridge;
 using NeximSimulator;
 
 bool dedupTest = args.Contains("--dedup-test", StringComparer.Ordinal);
+bool reconnectDedupTest = args.Contains("--reconnect-dedup-test", StringComparer.Ordinal);
 using CancellationTokenSource cancellation = new();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
 using TcpListener listener = new(IPAddress.Loopback, 30040);
@@ -11,6 +12,19 @@ listener.Start();
 Console.WriteLine("NeximSimulator escuchando en 127.0.0.1:30040...");
 try
 {
+    if (reconnectDedupTest)
+    {
+        try
+        {
+            await ReconnectDedupTestScenario.RunAsync(listener, cancellation.Token);
+        }
+        catch (Exception exception) when (!cancellation.IsCancellationRequested)
+        {
+            Console.WriteLine($"RECONNECT DEDUP TEST FAILED: {exception.Message}");
+            Environment.ExitCode = 1;
+        }
+        return;
+    }
     while (!cancellation.IsCancellationRequested)
     {
         using TcpClient client = await listener.AcceptTcpClientAsync(cancellation.Token);
