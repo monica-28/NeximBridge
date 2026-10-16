@@ -65,5 +65,8 @@
     <Compile Include="../../IMcAlarmOffRepository.cs" Link="Production/IMcAlarmOffRepository.cs" />
     <Compile Include="../../NeximRepository.McAlarmOff.cs" Link="Production/NeximRepository.McAlarmOff.cs" />
     <Compile Include="../../McAlarmOffAckSender.cs" Link="Production/McAlarmOffAckSender.cs" />
+    <Compile Include="../../RawEventDeduplication.cs" Link="Production/RawEventDeduplication.cs" />
+    <Compile Include="../../NeximRepository.RawDeduplication.cs" Link="Production/NeximRepository.RawDeduplication.cs" />
+    <Compile Include="../../NeximEventProcessor.cs" Link="Production/NeximEventProcessor.cs" />
   </ItemGroup>
 </Project>

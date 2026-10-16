@@ -192,11 +192,11 @@ internal static class RemainingEventsTests
         Equal(body, store.Raw); Equal("PENDING,ERROR", string.Join(',', store.Calls)); Equal(0, store.Commands.Count);
         if (!ack) Equal(0L, stream.Length);
     }
-    private static RemainingEventProcessor Processor(Store store) => new(store,
+    private static RemainingEventProcessor Processor(Store store) => new(new(store, NullLogger<NeximEventProcessor>.Instance),
         new(store, NullLogger<LoadCompIVHandler>.Instance), new(store, NullLogger<ChangeCompIIHandler>.Instance),
         new(store, NullLogger<UnloadCompHandler>.Instance), new(store, NullLogger<McAlarmOnHandler>.Instance),
         new(store, NullLogger<McAlarmOffHandler>.Instance), new(new(), NullLogger<McAlarmOnAckSender>.Instance),
-        new(new(), NullLogger<McAlarmOffAckSender>.Instance), NullLogger<RemainingEventProcessor>.Instance);
+        new(new(), NullLogger<McAlarmOffAckSender>.Instance));
     private static ParsedNeximMessage Message(string body) => new NeximMessageParser().Parse(body);
     private static string Header(string body, int index, string value)
     { var records = body.Split('\r'); var fields = records[0].Split('\t'); fields[index] = value; records[0] = string.Join('\t', fields); return string.Join('\r', records); }
@@ -228,6 +228,12 @@ internal static class RemainingEventsTests
     {
         public string? Raw; public List<string> Calls = []; public List<SqlCommand> Commands = [];
         public bool FailInsert, CancelInsert, StatusTokenCancelled, FailProcessed;
+        public async Task<RawEventInsertResult> InsertRawEventOrGetExistingAsync(string eventName, string? seqId,
+            string rawMessage, DateTimeOffset receivedAt, CancellationToken cancellationToken = default)
+        {
+            long id = await InsertRawEvent(eventName, seqId, rawMessage, receivedAt, "PENDING", cancellationToken);
+            return new(false, id, "PENDING", eventName, seqId, rawMessage);
+        }
         public Task<long> InsertRawEvent(string name, string? seq, string raw, DateTimeOffset at, string status, CancellationToken cancellationToken = default)
         { Raw = raw; Calls.Add(status); return Task.FromResult(42L); }
         public Task UpdateRawEventStatus(long id, string status, CancellationToken cancellationToken = default)

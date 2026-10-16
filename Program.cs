@@ -19,6 +19,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IPartsUsageRepository>(provider => provider.GetRequiredService<NeximRepository>());
 		services.AddSingleton<PartsUsageHandler>();
         services.AddSingleton<IRawEventRepository>(provider => provider.GetRequiredService<NeximRepository>());
+        services.AddSingleton<NeximEventProcessor>();
         services.AddSingleton<RemainingEventProcessor>();
         services.AddSingleton<ILoadCompIVRepository>(provider => provider.GetRequiredService<NeximRepository>());
         services.AddSingleton<LoadCompIVHandler>();

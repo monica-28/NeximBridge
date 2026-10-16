@@ -11,6 +11,7 @@ const string body = "PARTSUSAGE\t1001\t20260928123456\tLINE1\tNXT1\t1\t1\tTESTJO
 List<(string Name, Func<Task> Run)> tests = [];
 tests.AddRange(AckTests.Cases(body));
 tests.AddRange(RemainingEventsTests.Cases());
+tests.AddRange(DeduplicationTests.Cases());
 tests.AddRange(PdErrorTests.Cases(args.Contains("--sql")));
 tests.AddRange(ProdStartedTests.Cases(args.Contains("--sql")));
 tests.AddRange(ProdCompletedIITests.Cases(args.Contains("--sql")));

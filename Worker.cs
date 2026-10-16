@@ -10,6 +10,7 @@ public sealed class Worker(
     IConfiguration configuration,
     NeximMessageParser messageParser,
     NeximRepository repository,
+    NeximEventProcessor eventProcessor,
     PartsUsageHandler partsUsageHandler,
     PartsUsageAckSender partsUsageAckSender,
     PdErrorHandler pdErrorHandler,
@@ -64,153 +65,38 @@ public sealed class Worker(
                 ParsedNeximMessage message = messageParser.Parse(rawMessage);
                 bool requiresAck = NeximAckPolicy.RequiresAck(subscriptions, message.EventName);
 
-                if (string.Equals(message.EventName, "PARTSUSAGE", StringComparison.Ordinal))
+                if (message.EventName == "PARTSUSAGE")
                 {
-                    try
-                    {
-                        long rawEventId = await repository.InsertRawEvent(
-                            message.EventName, message.SeqID, message.RawMessage,
-                            DateTimeOffset.UtcNow, "PENDING", stoppingToken);
-                        await partsUsageHandler.HandleAsync(message, rawEventId, stoppingToken);
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            if (requiresAck && networkStream.CanWrite)
-                            {
-                                using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
-                                await partsUsageAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
-                            }
-                        }
-                        catch (Exception ackException)
-                        {
-                            logger.LogError(ackException, "No se pudo enviar PARTSUSAGE_ACK Result=1, SeqID={SeqID}.", message.SeqID);
-                        }
-                        throw;
-                    }
-                    // A send failure must not generate Result=1 after successful persistence.
-                    if (requiresAck) await partsUsageAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    await eventProcessor.ProcessAsync(networkStream, message, requiresAck,
+                        partsUsageHandler.HandleAsync, partsUsageAckSender.SendAsync, stoppingToken);
                     continue;
                 }
 
-                if (string.Equals(message.EventName, "PDERROR", StringComparison.Ordinal))
+                if (message.EventName == "PDERROR")
                 {
-                    try
-                    {
-                        long rawEventId = await repository.InsertRawEvent(
-                            message.EventName, message.SeqID, message.RawMessage,
-                            DateTimeOffset.UtcNow, "PENDING", stoppingToken);
-                        await pdErrorHandler.HandleAsync(message, rawEventId, stoppingToken);
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            if (requiresAck && networkStream.CanWrite)
-                            {
-                                using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
-                                await pdErrorAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
-                            }
-                        }
-                        catch (Exception ackException)
-                        {
-                            logger.LogError(ackException, "No se pudo enviar PDERROR_ACK Result=1, SeqID={SeqID}.", message.SeqID);
-                        }
-                        throw;
-                    }
-                    // A failed ACK write does not turn a committed event into a rejection.
-                    if (requiresAck) await pdErrorAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    await eventProcessor.ProcessAsync(networkStream, message, requiresAck,
+                        pdErrorHandler.HandleAsync, pdErrorAckSender.SendAsync, stoppingToken);
                     continue;
                 }
 
-                if (string.Equals(message.EventName, "PRODSTARTED", StringComparison.Ordinal))
+                if (message.EventName == "PRODSTARTED")
                 {
-                    try
-                    {
-                        long rawEventId = await repository.InsertRawEvent(
-                            message.EventName, message.SeqID, message.RawMessage,
-                            DateTimeOffset.UtcNow, "PENDING", stoppingToken);
-                        await prodStartedHandler.HandleAsync(message, rawEventId, stoppingToken);
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            if (requiresAck && networkStream.CanWrite)
-                            {
-                                using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
-                                await prodStartedAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
-                            }
-                        }
-                        catch (Exception ackException)
-                        {
-                            logger.LogError(ackException, "No se pudo enviar PRODSTARTED_ACK Result=1, SeqID={SeqID}.", message.SeqID);
-                        }
-                        throw;
-                    }
-                    // A failed ACK write does not turn a committed event into a rejection.
-                    if (requiresAck) await prodStartedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    await eventProcessor.ProcessAsync(networkStream, message, requiresAck,
+                        prodStartedHandler.HandleAsync, prodStartedAckSender.SendAsync, stoppingToken);
                     continue;
                 }
 
-                if (string.Equals(message.EventName, "PRODCOMPLETEDII", StringComparison.Ordinal))
+                if (message.EventName == "PRODCOMPLETEDII")
                 {
-                    try
-                    {
-                        long rawEventId = await repository.InsertRawEvent(
-                            message.EventName, message.SeqID, message.RawMessage,
-                            DateTimeOffset.UtcNow, "PENDING", stoppingToken);
-                        await prodCompletedIIHandler.HandleAsync(message, rawEventId, stoppingToken);
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            if (requiresAck && networkStream.CanWrite)
-                            {
-                                using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
-                                await prodCompletedIIAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
-                            }
-                        }
-                        catch (Exception ackException)
-                        {
-                            logger.LogError(ackException, "No se pudo enviar PRODCOMPLETEDII_ACK Result=1, SeqID={SeqID}.", message.SeqID);
-                        }
-                        throw;
-                    }
-                    // A failed ACK write does not turn a committed event into a rejection.
-                    if (requiresAck) await prodCompletedIIAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    await eventProcessor.ProcessAsync(networkStream, message, requiresAck,
+                        prodCompletedIIHandler.HandleAsync, prodCompletedIIAckSender.SendAsync, stoppingToken);
                     continue;
                 }
 
-                if (string.Equals(message.EventName, "PRODSTOPPED", StringComparison.Ordinal))
+                if (message.EventName == "PRODSTOPPED")
                 {
-                    try
-                    {
-                        long rawEventId = await repository.InsertRawEvent(
-                            message.EventName, message.SeqID, message.RawMessage,
-                            DateTimeOffset.UtcNow, "PENDING", stoppingToken);
-                        await prodStoppedHandler.HandleAsync(message, rawEventId, stoppingToken);
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            if (requiresAck && networkStream.CanWrite)
-                            {
-                                using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
-                                await prodStoppedAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
-                            }
-                        }
-                        catch (Exception ackException)
-                        {
-                            logger.LogError(ackException, "No se pudo enviar PRODSTOPPED_ACK Result=1, SeqID={SeqID}.", message.SeqID);
-                        }
-                        throw;
-                    }
-                    // A failed ACK write does not turn a committed event into a rejection.
-                    if (requiresAck) await prodStoppedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    await eventProcessor.ProcessAsync(networkStream, message, requiresAck,
+                        prodStoppedHandler.HandleAsync, prodStoppedAckSender.SendAsync, stoppingToken);
                     continue;
                 }
 
