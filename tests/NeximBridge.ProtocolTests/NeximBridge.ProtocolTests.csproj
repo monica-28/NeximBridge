@@ -12,5 +12,6 @@
     <Compile Include="../../NeximInitializationProtocol.cs" Link="Shared/NeximInitializationProtocol.cs" />
     <Compile Include="../../NeximSessionInitializer.cs" Link="Shared/NeximSessionInitializer.cs" />
     <Compile Include="../../NeximSimulator/SimulatorInitialization.cs" Link="Simulator/SimulatorInitialization.cs" />
+    <Compile Include="../../NeximEventSubscription.cs" Link="Shared/NeximEventSubscription.cs" />
   </ItemGroup>
 </Project>

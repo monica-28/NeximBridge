@@ -10,6 +10,22 @@ List<(string Name, Func<Task> Run)> tests = [];
 void Test(string name, Func<Task> run) => tests.Add((name, run));
 void Sync(string name, Action run) => Test(name, () => { run(); return Task.CompletedTask; });
 
+Test("TCP: mixed subscription flags survive complete initialization", async () =>
+{
+    using Pair pair = await Pair.OpenAsync();
+    NeximSessionInitializer initializer = NewInitializer();
+    NeximEventSubscription[] events = [new() { Name = "PARTSUSAGE", Ack = true },
+        new() { Name = "LOADCOMPIV", Ack = false }, new() { Name = "CHANGECOMPII", Ack = false },
+        new() { Name = "UNLOADCOMP", Ack = false }, new() { Name = "MCALARMON", Ack = true },
+        new() { Name = "MCALARMOFF", Ack = true }];
+    SimulatorInitialization simulator = new();
+    await Task.WhenAll(
+        initializer.InitializeSubscriptionsAsync(pair.ClientStream, events, "NXT1", TimeSpan.FromSeconds(3), pair.Token),
+        simulator.RunAsync(pair.ServerStream, TimeSpan.FromSeconds(3), pair.Token));
+    Equal(NeximSessionState.Receiving, initializer.State);
+    foreach (var subscription in events) Equal(subscription.Ack, simulator.Events[subscription.Name]);
+});
+
 Sync("SETEV: golden bytes, NumList and final CR", () =>
 {
     byte[] actual = new NeximSetEventBuilder().Build("1", ["PARTSUSAGE", "PDERROR"]);

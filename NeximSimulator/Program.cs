@@ -35,6 +35,21 @@ try
             if (!initialization.Events.TryGetValue("PRODSTOPPED", out bool prodStoppedRequiresAck) || !prodStoppedRequiresAck)
                 throw new IOException("La prueba requiere una suscripción SETEV a PRODSTOPPED con ACK=1.");
             await ProdStoppedScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("LOADCOMPIV", out bool loadCompIVAck) || loadCompIVAck)
+                throw new IOException("La prueba requiere SETEV LOADCOMPIV con ACK=0.");
+            await LoadCompIVScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("CHANGECOMPII", out bool changeCompIIAck) || changeCompIIAck)
+                throw new IOException("La prueba requiere SETEV CHANGECOMPII con ACK=0.");
+            await ChangeCompIIScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("UNLOADCOMP", out bool unloadCompAck) || unloadCompAck)
+                throw new IOException("La prueba requiere SETEV UNLOADCOMP con ACK=0.");
+            await UnloadCompScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("MCALARMON", out bool mcAlarmOnAck) || !mcAlarmOnAck)
+                throw new IOException("La prueba requiere SETEV MCALARMON con ACK=1.");
+            await McAlarmOnScenario.RunAsync(stream, cancellation.Token);
+            if (!initialization.Events.TryGetValue("MCALARMOFF", out bool mcAlarmOffAck) || !mcAlarmOffAck)
+                throw new IOException("La prueba requiere SETEV MCALARMOFF con ACK=1.");
+            await McAlarmOffScenario.RunAsync(stream, cancellation.Token);
             Console.WriteLine("Conexi\u00f3n mantenida. Estado: recepci\u00f3n; KEEPALIVE cada 120 segundos.");
             await KeepAliveSession.RunAsync(stream, cancellation.Token);
         }

@@ -7,7 +7,6 @@ public sealed class NeximAckBuilder
     private const byte Stx = 0x02;
     private const byte Etx = 0x03;
     private const char FieldSeparator = '\t';
-    private const string AckEventName = "ACK";
 
     private static readonly HashSet<string> AcknowledgedEventNames = new(StringComparer.Ordinal)
     {
@@ -18,10 +17,6 @@ public sealed class NeximAckBuilder
         "PRODSTOPPED",
         "MCALARMON",
         "MCALARMOFF",
-        "RECOVERYUP",
-        "LOADCOMPIV",
-        "CHANGECOMPII",
-        "UNLOADCOMP"
     };
 
     public byte[] Build(ParsedNeximMessage message, int result = 0)
@@ -104,8 +99,17 @@ public sealed class NeximAckBuilder
             return NeximInitializationProtocol.Frame(string.Join(FieldSeparator, fields));
         }
 
-        return NeximInitializationProtocol.Frame(
-            $"{AckEventName}{FieldSeparator}{message.SeqID}{FieldSeparator}{resultText}");
+        if (message.EventName is "MCALARMON" or "MCALARMOFF")
+        {
+            if (message.Fields.Count < 6)
+                throw new NeximAckException("La alarma no contiene los campos necesarios para su ACK.");
+            string[] fields = [message.EventName + "_ACK", message.SeqID, resultText,
+                message.Fields[4], message.Fields[5]];
+            if (fields.Any(field => field.Any(char.IsControl)))
+                throw new NeximAckException("Los campos del ACK no pueden contener caracteres de control.");
+            return NeximInitializationProtocol.Frame(string.Join(FieldSeparator, fields));
+        }
+        throw new NeximAckException($"Sin ACK especifico para {message.EventName}.");
     }
 }
 

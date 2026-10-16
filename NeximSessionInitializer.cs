@@ -8,7 +8,12 @@ public sealed class NeximSessionInitializer(
 {
     private int sequence;
     public NeximSessionState State { get; private set; } = NeximSessionState.Connected;
-    public async Task InitializeAsync(Stream stream, IEnumerable<string> events, string machineName,
+    public Task InitializeAsync(Stream stream, IEnumerable<string> events, string machineName,
+        TimeSpan timeout, CancellationToken cancellationToken = default) =>
+        InitializeSubscriptionsAsync(stream, events.Select(name => new NeximEventSubscription { Name = name, Ack = true }),
+            machineName, timeout, cancellationToken);
+
+    public async Task InitializeSubscriptionsAsync(Stream stream, IEnumerable<NeximEventSubscription> events, string machineName,
         TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         State = NeximSessionState.Connected;
@@ -17,7 +22,7 @@ public sealed class NeximSessionInitializer(
             if (timeout <= TimeSpan.Zero || timeout.TotalMilliseconds > uint.MaxValue - 1)
                 throw new ArgumentOutOfRangeException(nameof(timeout));
             string setSequence = NextSequence();
-            byte[] setFrame = setEventBuilder.Build(setSequence, events, machineName);
+            byte[] setFrame = setEventBuilder.BuildSubscriptions(setSequence, events, machineName);
             string startSequence = NextSequence();
             byte[] startFrame = startEventBuilder.Build(startSequence, machineName);
             State = NeximSessionState.WaitingSetEventAck;

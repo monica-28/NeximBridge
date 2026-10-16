@@ -30,8 +30,11 @@ desconexión, framing inválido o timeout impiden pasar a recepción y cierran l
 ## Configuración
 
 En `appsettings.json`, `Nexim:Host=127.0.0.1` y `Nexim:Port=30040` apuntan al
-simulador. `Nexim:Events` configura los eventos de SETEV, solicitando ACK=1 para
-cada uno; `Nexim:MachineName` está vacío por defecto.
+simulador. `Nexim:Events` contiene objetos `{ "Name": "PARTSUSAGE", "Ack": true }`.
+Cada suscripción genera `Name<TAB>1<CR>` o `Name<TAB>0<CR>` según `Ack`.
+LOADCOMPIV, CHANGECOMPII y UNLOADCOMP utilizan `Ack=false`; los cinco eventos
+anteriores y MCALARMON/MCALARMOFF utilizan `Ack=true`.
+`Nexim:MachineName` está vacío por defecto.
 `Nexim:InitializationTimeoutSeconds=10` limita cada intercambio de inicialización,
 incluida la lectura de respuestas parciales. Es una política local, no un timeout
 prescrito por Fuji. El lector limita localmente los frames a 16 MiB.
@@ -46,10 +49,11 @@ PRODSTOPPED, LOADCOMPIV, CHANGECOMPII, UNLOADCOMP, MCALARMON, MCALARMOFF,
 RECOVERYUP y KEEPALIVE. Los demás nombres se rechazan con Result=1; es el
 subconjunto admitido por este simulador, no el catálogo completo de Fuji.
 
-No genera eventos de producción abreviados. Después de confirmar STARTEV utiliza
-únicamente KEEPALIVE, siempre habilitado según Fuji: intervalo de 120 segundos y
-timeout de 30 segundos. Acepta nuevas conexiones tras finalizar cada sesión.
-Los parsers y el repositorio SQL existentes no se han modificado.
+Después de STARTEV envía los diez escenarios descritos en [REMAINING_EVENTS.md](REMAINING_EVENTS.md),
+con SeqID 1001–1010. A continuación mantiene la conexión con KEEPALIVE desde
+SeqID=1011: intervalo de 120 segundos y timeout de 30 segundos para su ACK.
+Acepta nuevas conexiones tras finalizar cada sesión. RECOVERYUP no se genera ni
+se procesa en NeximBridge, aunque el validador de SETEV lo reconoce.
 
 ## Pruebas desde PowerShell
 

@@ -57,7 +57,7 @@ def run_case(name, response, expected_log):
     try:
         assert ready.wait(5), "Simulator did not start (port 30040 must be free): " + "".join(lines)
         with socket.create_connection(("127.0.0.1", 30040), timeout=5) as peer:
-            peer.sendall(wire("SETEV\t1\t\t5\rPARTSUSAGE\t1\rPDERROR\t1\rPRODSTARTED\t1\rPRODCOMPLETEDII\t1\rPRODSTOPPED\t1\r"))
+            peer.sendall(wire("SETEV\t1\t\t10\rPARTSUSAGE\t1\rPDERROR\t1\rPRODSTARTED\t1\rPRODCOMPLETEDII\t1\rPRODSTOPPED\t1\rLOADCOMPIV\t0\rCHANGECOMPII\t0\rUNLOADCOMP\t0\rMCALARMON\t1\rMCALARMOFF\t1\r"))
             assert read(peer) == "SETEV_ACK\t1\t\t0"
             peer.settimeout(0.15)
             try:
@@ -124,6 +124,13 @@ def run_case(name, response, expected_log):
             if expected_log != "PRODSTOPPED_ACK validado":
                 assert "PRODSTOPPED_ACK validado" not in output, output
             else:
+                assert read(peer).startswith("LOADCOMPIV\t1006\t")
+                assert read(peer).startswith("CHANGECOMPII\t1007\t")
+                assert read(peer).startswith("UNLOADCOMP\t1008\t")
+                assert read(peer).startswith("MCALARMON\t1009\t")
+                peer.sendall(wire("MCALARMON_ACK\t1009\t0\tNXT1\t1"))
+                assert read(peer).startswith("MCALARMOFF\t1010\t")
+                peer.sendall(wire("MCALARMOFF_ACK\t1010\t0\tNXT1\t1"))
                 peer.settimeout(0.2)
                 try:
                     extra = peer.recv(1)

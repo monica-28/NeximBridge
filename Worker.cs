@@ -20,14 +20,14 @@ public sealed class Worker(
     ProdCompletedIIAckSender prodCompletedIIAckSender,
     ProdStartedHandler prodStartedHandler,
     ProdStartedAckSender prodStartedAckSender,
-    ComponentHandler componentHandler,
-    AlarmAndRecoveryHandler alarmAndRecoveryHandler,
+    RemainingEventProcessor remainingEvents,
     NeximKeepAliveAckBuilder keepAliveAckBuilder) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("NeximBridge Worker iniciado en {StartedAt}", DateTimeOffset.Now);
 
+        NeximEventSubscription[] subscriptions = configuration.GetSection("Nexim:Events").Get<NeximEventSubscription[]>() ?? [];
         NetworkStream? initializedStream = null;
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -46,8 +46,8 @@ public sealed class Worker(
                     initializedStream = null;
                     try
                     {
-                        await sessionInitializer.InitializeAsync(networkStream,
-                            configuration.GetSection("Nexim:Events").Get<string[]>() ?? [],
+                        await sessionInitializer.InitializeSubscriptionsAsync(networkStream,
+                            subscriptions,
                             configuration["Nexim:MachineName"] ?? "",
                             TimeSpan.FromSeconds(configuration.GetValue("Nexim:InitializationTimeoutSeconds", 10)),
                             stoppingToken);
@@ -62,6 +62,7 @@ public sealed class Worker(
                 }
                 string rawMessage = await frameReader.ReadMessageAsync(networkStream, stoppingToken);
                 ParsedNeximMessage message = messageParser.Parse(rawMessage);
+                bool requiresAck = NeximAckPolicy.RequiresAck(subscriptions, message.EventName);
 
                 if (string.Equals(message.EventName, "PARTSUSAGE", StringComparison.Ordinal))
                 {
@@ -76,7 +77,7 @@ public sealed class Worker(
                     {
                         try
                         {
-                            if (networkStream.CanWrite)
+                            if (requiresAck && networkStream.CanWrite)
                             {
                                 using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
                                 await partsUsageAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
@@ -89,7 +90,7 @@ public sealed class Worker(
                         throw;
                     }
                     // A send failure must not generate Result=1 after successful persistence.
-                    await partsUsageAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    if (requiresAck) await partsUsageAckSender.SendAsync(networkStream, message, 0, stoppingToken);
                     continue;
                 }
 
@@ -106,7 +107,7 @@ public sealed class Worker(
                     {
                         try
                         {
-                            if (networkStream.CanWrite)
+                            if (requiresAck && networkStream.CanWrite)
                             {
                                 using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
                                 await pdErrorAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
@@ -119,7 +120,7 @@ public sealed class Worker(
                         throw;
                     }
                     // A failed ACK write does not turn a committed event into a rejection.
-                    await pdErrorAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    if (requiresAck) await pdErrorAckSender.SendAsync(networkStream, message, 0, stoppingToken);
                     continue;
                 }
 
@@ -136,7 +137,7 @@ public sealed class Worker(
                     {
                         try
                         {
-                            if (networkStream.CanWrite)
+                            if (requiresAck && networkStream.CanWrite)
                             {
                                 using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
                                 await prodStartedAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
@@ -149,7 +150,7 @@ public sealed class Worker(
                         throw;
                     }
                     // A failed ACK write does not turn a committed event into a rejection.
-                    await prodStartedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    if (requiresAck) await prodStartedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
                     continue;
                 }
 
@@ -166,7 +167,7 @@ public sealed class Worker(
                     {
                         try
                         {
-                            if (networkStream.CanWrite)
+                            if (requiresAck && networkStream.CanWrite)
                             {
                                 using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
                                 await prodCompletedIIAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
@@ -179,7 +180,7 @@ public sealed class Worker(
                         throw;
                     }
                     // A failed ACK write does not turn a committed event into a rejection.
-                    await prodCompletedIIAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    if (requiresAck) await prodCompletedIIAckSender.SendAsync(networkStream, message, 0, stoppingToken);
                     continue;
                 }
 
@@ -196,7 +197,7 @@ public sealed class Worker(
                     {
                         try
                         {
-                            if (networkStream.CanWrite)
+                            if (requiresAck && networkStream.CanWrite)
                             {
                                 using CancellationTokenSource ackDeadline = new(TimeSpan.FromSeconds(10));
                                 await prodStoppedAckSender.SendAsync(networkStream, message, 1, ackDeadline.Token);
@@ -209,19 +210,13 @@ public sealed class Worker(
                         throw;
                     }
                     // A failed ACK write does not turn a committed event into a rejection.
-                    await prodStoppedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
+                    if (requiresAck) await prodStoppedAckSender.SendAsync(networkStream, message, 0, stoppingToken);
                     continue;
                 }
 
-                if (message.EventName is "LOADCOMPIV" or "CHANGECOMPII" or "UNLOADCOMP")
+                if (RemainingEventProcessor.Supports(message.EventName))
                 {
-                    await componentHandler.HandleAsync(message, stoppingToken);
-                    continue;
-                }
-
-                if (message.EventName is "MCALARMON" or "MCALARMOFF" or "RECOVERYUP")
-                {
-                    await alarmAndRecoveryHandler.HandleAsync(message, stoppingToken);
+                    await remainingEvents.ProcessAsync(networkStream, message, requiresAck, stoppingToken);
                     continue;
                 }
 

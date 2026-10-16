@@ -10,7 +10,7 @@ internal static class KeepAliveSession
         using CancellationTokenSource session = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         NeximFrameReader reader = new();
         Task<string>? receive = null;
-        int sequence = 1005; // 1005 = PRODSTOPPED; first KEEPALIVE = 1006.
+        int sequence = 1010; // 1010 = MCALARMOFF; first KEEPALIVE = 1011.
         try
         {
             while (!session.IsCancellationRequested)

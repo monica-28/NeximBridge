@@ -37,5 +37,33 @@
     <Compile Include="../../ProdStoppedAckSender.cs" Link="Production/ProdStoppedAckSender.cs" />
     <Compile Include="../../IProdStoppedRepository.cs" Link="Production/IProdStoppedRepository.cs" />
     <Compile Include="../../NeximRepository.ProdStopped.cs" Link="Production/NeximRepository.ProdStopped.cs" />
+    <Compile Include="../../NeximEventSubscription.cs" Link="Production/NeximEventSubscription.cs" />
+    <Compile Include="../../RemainingEventFields.cs" Link="Production/RemainingEventFields.cs" />
+    <Compile Include="../../RemainingEventBatch.cs" Link="Production/RemainingEventBatch.cs" />
+    <Compile Include="../../RemainingEventProcessor.cs" Link="Production/RemainingEventProcessor.cs" />
+    <Compile Include="../../IRawEventRepository.cs" Link="Production/IRawEventRepository.cs" />
+    <Compile Include="../../NeximSetEventBuilder.cs" Link="Production/NeximSetEventBuilder.cs" />
+    <Compile Include="../../LoadCompIVParser.cs" Link="Production/LoadCompIVParser.cs" />
+    <Compile Include="../../LoadCompIVHandler.cs" Link="Production/LoadCompIVHandler.cs" />
+    <Compile Include="../../ILoadCompIVRepository.cs" Link="Production/ILoadCompIVRepository.cs" />
+    <Compile Include="../../NeximRepository.LoadCompIV.cs" Link="Production/NeximRepository.LoadCompIV.cs" />
+    <Compile Include="../../ChangeCompIIParser.cs" Link="Production/ChangeCompIIParser.cs" />
+    <Compile Include="../../ChangeCompIIHandler.cs" Link="Production/ChangeCompIIHandler.cs" />
+    <Compile Include="../../IChangeCompIIRepository.cs" Link="Production/IChangeCompIIRepository.cs" />
+    <Compile Include="../../NeximRepository.ChangeCompII.cs" Link="Production/NeximRepository.ChangeCompII.cs" />
+    <Compile Include="../../UnloadCompParser.cs" Link="Production/UnloadCompParser.cs" />
+    <Compile Include="../../UnloadCompHandler.cs" Link="Production/UnloadCompHandler.cs" />
+    <Compile Include="../../IUnloadCompRepository.cs" Link="Production/IUnloadCompRepository.cs" />
+    <Compile Include="../../NeximRepository.UnloadComp.cs" Link="Production/NeximRepository.UnloadComp.cs" />
+    <Compile Include="../../McAlarmOnParser.cs" Link="Production/McAlarmOnParser.cs" />
+    <Compile Include="../../McAlarmOnHandler.cs" Link="Production/McAlarmOnHandler.cs" />
+    <Compile Include="../../IMcAlarmOnRepository.cs" Link="Production/IMcAlarmOnRepository.cs" />
+    <Compile Include="../../NeximRepository.McAlarmOn.cs" Link="Production/NeximRepository.McAlarmOn.cs" />
+    <Compile Include="../../McAlarmOnAckSender.cs" Link="Production/McAlarmOnAckSender.cs" />
+    <Compile Include="../../McAlarmOffParser.cs" Link="Production/McAlarmOffParser.cs" />
+    <Compile Include="../../McAlarmOffHandler.cs" Link="Production/McAlarmOffHandler.cs" />
+    <Compile Include="../../IMcAlarmOffRepository.cs" Link="Production/IMcAlarmOffRepository.cs" />
+    <Compile Include="../../NeximRepository.McAlarmOff.cs" Link="Production/NeximRepository.McAlarmOff.cs" />
+    <Compile Include="../../McAlarmOffAckSender.cs" Link="Production/McAlarmOffAckSender.cs" />
   </ItemGroup>
 </Project>
