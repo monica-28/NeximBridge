@@ -315,13 +315,13 @@ internal static class DeduplicationTests
     { public long Id = id; public string Name = name; public string? Seq = seq; public string Raw = raw; public byte[]? Hash = hash; public string Status = "PENDING"; }
     private sealed class Database
     {
-        public readonly List<Row> Rows = []; public readonly List<string> Operations = [];
+        public readonly List<Row> Rows = []; public readonly System.Collections.Concurrent.ConcurrentQueue<string> Operations = new();
         public int DuplicateErrorNumber = 2601; public SqlException? LastException, InsertError;
         public object Insert(DbParameterCollection parameters)
         {
             lock (Rows)
             {
-                Operations.Add("INSERT");
+                Operations.Enqueue("INSERT");
                 if (InsertError is not null) throw InsertError;
                 Equal(DbType.Binary, parameters["@raw_hash"].DbType); Equal(32, parameters["@raw_hash"].Size);
                 byte[]? hash = parameters["@raw_hash"].Value as byte[];
@@ -337,7 +337,7 @@ internal static class DeduplicationTests
         {
             lock (Rows)
             {
-                Operations.Add("SELECT");
+                Operations.Enqueue("SELECT");
                 byte[] hash = (byte[])parameters["@raw_hash"].Value!;
                 DataTable table = new(); table.Columns.Add("raw_event_id", typeof(long));
                 foreach (string name in new[] { "parse_status", "event_name", "seq_id", "raw_message" }) table.Columns.Add(name, typeof(string));

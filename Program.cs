@@ -2,11 +2,30 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NeximBridge;
+using Microsoft.Extensions.Configuration;
+using Serilog;
 
-IHost host = Host.CreateDefaultBuilder(args)
+try
+{
+IConfigurationRoot loggingConfiguration = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables().AddCommandLine(args).Build();
+using var configurationLifetime = (IDisposable)loggingConfiguration;
+using var fileLogger = NeximLogging.CreateFileLogger(loggingConfiguration);
+using var startupFactory = LoggerFactory.Create(logging => logging
+    .AddConfiguration(loggingConfiguration.GetSection("Logging"))
+    .AddSimpleConsole().AddProvider(new Serilog.Extensions.Logging.SerilogLoggerProvider(fileLogger, dispose: false)));
+var startupLogger = startupFactory.CreateLogger("NeximBridge.Startup");
+try
+{
+using IHost host = Host.CreateDefaultBuilder(args)
 	.UseWindowsService(options => options.ServiceName = "NeximBridge")
 	.ConfigureLogging(logging =>
 	{
+        logging.AddConfiguration(loggingConfiguration.GetSection("Logging"));
+        logging.AddProvider(new Serilog.Extensions.Logging.SerilogLoggerProvider(fileLogger, dispose: false));
 		if (OperatingSystem.IsWindows())
 		{
 			logging.AddEventLog(options => options.SourceName = "NeximBridge");
@@ -60,3 +79,16 @@ IHost host = Host.CreateDefaultBuilder(args)
 	.Build();
 
 await host.RunAsync();
+}
+catch (Exception exception)
+{
+    startupLogger.LogCritical(exception, "NeximBridge no pudo arrancar o terminó inesperadamente.");
+    Environment.ExitCode = 1;
+}
+// Disposing the host first, then the factories and finally the sink flushes/closes files.
+}
+catch (Exception exception)
+{
+    Console.Error.WriteLine($"NeximBridge: error inicializando logging ({exception.GetType().Name}).");
+    Environment.ExitCode = 1;
+}

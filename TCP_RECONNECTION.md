@@ -99,3 +99,7 @@ Resultado: ambos builds correctos; 459/459 pruebas de eventos/conexión, 64/64 d
 protocolo y 116/116 Python. Total: 639 comprobaciones superadas, con 30 casos nuevos.
 El proyecto de tests de eventos conserva el aviso NU1900 de auditoría NuGet no
 disponible; no impidió la compilación ni las pruebas.
+
+## Logs persistentes
+
+La consola se mantiene y los logs se guardan con rotación diaria y por tamaño. Consulta [LOGGING.md](LOGGING.md) para rutas, retención, niveles y Debug temporal.

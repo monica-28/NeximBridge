@@ -85,3 +85,7 @@ C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\Nex
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\NeximBridge.genruntimeconfig.cache
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\ref\NeximBridge.dll
 C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\obj\Debug\net8.0-windows\NeximBridge.sourcelink.json
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\bin\Debug\net8.0-windows\Serilog.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\bin\Debug\net8.0-windows\Serilog.Extensions.Logging.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\bin\Debug\net8.0-windows\Serilog.Sinks.File.dll
+C:\Users\monic\OneDrive\Documentos\EPSA\NeximBridge\bin\Debug\net8.0-windows\System.Diagnostics.DiagnosticSource.dll
