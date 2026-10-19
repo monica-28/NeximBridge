@@ -1,0 +1,19 @@
+﻿# .NET build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Test output
+TestResults/
+
+# NeximBridge runtime
+logs/
+tmp/
+*.log
+
+# Publish output
+publish/
