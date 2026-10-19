@@ -32,7 +32,7 @@ public sealed partial class NeximRepository
             VALUES (@event_name, @seq_id, @raw_message, @received_at, 'PENDING', @raw_hash);
             """;
         AddParameter(insert, "@event_name", DbType.String, eventName, 200);
-        AddParameter(insert, "@seq_id", DbType.String, seqId, 100);
+        AddParameter(insert, "@seq_id", DbType.Int32, SqlSequence(seqId));
         AddParameter(insert, "@raw_message", DbType.String, rawMessage, -1);
         AddParameter(insert, "@received_at", DbType.DateTimeOffset, receivedAt);
         AddParameter(insert, "@raw_hash", DbType.Binary, hash, 32);

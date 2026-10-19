@@ -44,7 +44,7 @@ public static class PartsUsageParser
                 Number(fields[10], "Rescancount"), Number(fields[11], "NoPickup")));
         }
         return new PartsUsageData(time, Text(header[3], "LineName"), Text(header[4], "MachineName"),
-            Number(header[5], "ModuleNo"), Number(header[6], "LaneNo"),
+            Number(header[5], "ModuleNo"), FujiDomain.Range(Number(header[6], "LaneNo"), 1, 2, "LaneNo"),
             Text(header[7], "ProgramName"), Text(header[8], "PanelNo"), details);
     }
 

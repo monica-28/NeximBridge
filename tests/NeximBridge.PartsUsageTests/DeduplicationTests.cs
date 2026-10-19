@@ -71,6 +71,14 @@ internal static class DeduplicationTests
                 }
                 finally { await worker.StopAsync(deadline.Token); await tcp.StopAsync(deadline.Token); }
             });
+        yield return ("Malformed SeqID preserves exact RAW with SQL NULL", async () =>
+        {
+            Database db = new(); using Connection connection = new(db);
+            const string raw = "PARTSUSAGE\tABC\tunaltered raw\r";
+            await NeximRepository.InsertRawEventOrGetExistingAsync(connection, "PARTSUSAGE", "ABC", raw, DateTimeOffset.UtcNow);
+            Equal(raw, db.Rows.Single().Raw);
+            Check(db.Rows.Single().Seq is null, "Malformed SeqID must be SQL NULL");
+        });
         yield return ("Hash: SHA256 exact UTF-8, 32 bytes and stable", () =>
         {
             const string raw = " MCALARMON\t1\rMáquina\r\n ";
@@ -323,12 +331,13 @@ internal static class DeduplicationTests
             {
                 Operations.Enqueue("INSERT");
                 if (InsertError is not null) throw InsertError;
+                Equal(DbType.Int32, parameters["@seq_id"].DbType);
                 Equal(DbType.Binary, parameters["@raw_hash"].DbType); Equal(32, parameters["@raw_hash"].Size);
                 byte[]? hash = parameters["@raw_hash"].Value as byte[];
                 if (hash is not null && Rows.Any(row => row.Hash is not null && row.Hash.SequenceEqual(hash)))
                     throw LastException = SqlError(DuplicateErrorNumber);
                 long id = Rows.Count + 1;
-                Rows.Add(new(id, (string)parameters["@event_name"].Value!, parameters["@seq_id"].Value as string,
+                Rows.Add(new(id, (string)parameters["@event_name"].Value!, parameters["@seq_id"].Value is DBNull ? null : Convert.ToString(parameters["@seq_id"].Value, System.Globalization.CultureInfo.InvariantCulture),
                     (string)parameters["@raw_message"].Value!, hash));
                 return id;
             }

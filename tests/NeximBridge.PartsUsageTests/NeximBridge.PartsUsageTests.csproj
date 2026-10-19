@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../FujiDomain.cs" Link="Production/FujiDomain.cs" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <Compile Include="../../PartsUsageParser.cs" Link="Production/PartsUsageParser.cs" />

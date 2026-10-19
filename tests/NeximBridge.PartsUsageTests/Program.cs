@@ -11,6 +11,7 @@ const string body = "PARTSUSAGE\t1001\t20260928123456\tLINE1\tNXT1\t1\t1\tTESTJO
     "1\t6\tCAP-100N\tCAP-100N-AVL\t50\t50\t0\t0\t0\t0\t0\t0\r";
 List<(string Name, Func<Task> Run)> tests = [];
 tests.AddRange(AckTests.Cases(body));
+tests.AddRange(FujiConformanceTests.Cases());
 tests.AddRange(RemainingEventsTests.Cases());
 tests.AddRange(DeduplicationTests.Cases());
 tests.AddRange(ConnectionTests.Cases());

@@ -21,7 +21,7 @@ public static class ProdStartedParser
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTimeOffset time))
             throw new NeximMessageParseException("PRODSTARTED: Time debe ser yyyyMMddHHmmss en UTC.");
         return new ProdStartedData(time, Text(fields[3], "LineName"), Text(fields[4], "MachineName"),
-            Number(fields[5], "ModuleNo"), Number(fields[6], "LaneNo"), Number(fields[7], "ProductMode"),
+            Number(fields[5], "ModuleNo"), FujiDomain.Range(Number(fields[6], "LaneNo"), 1, 2, "LaneNo"), FujiDomain.Range(Number(fields[7], "ProductMode"), 0, 1, "ProductMode"),
             Text(fields[8], "ProgramName"), Text(fields[9], "PanelNo"));
     }
 

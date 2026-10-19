@@ -5,6 +5,14 @@ namespace NeximBridge;
 
 public sealed partial class NeximRepository(IConfiguration configuration) : IPartsUsageRepository, IRawEventRepository
 {
+    internal static object SqlSequence(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value.Any(c => c is < '0' or > '9') ||
+            !int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int id) ||
+            id is < 1 or > 999999) return DBNull.Value;
+        return id;
+    }
+
     private const string InsertRawEventCommand = """
         INSERT INTO nexim_raw_event
             (event_name, seq_id, raw_message, received_at, parse_status)
@@ -34,8 +42,7 @@ public sealed partial class NeximRepository(IConfiguration configuration) : IPar
 
         await using SqlCommand command = new(InsertRawEventCommand, connection);
         command.Parameters.Add("@event_name", SqlDbType.NVarChar, 200).Value = eventName;
-        command.Parameters.Add("@seq_id", SqlDbType.NVarChar, 100).Value =
-            (object?)seqId ?? DBNull.Value;
+        command.Parameters.Add("@seq_id", SqlDbType.Int).Value = SqlSequence(seqId);
         command.Parameters.Add("@raw_message", SqlDbType.NVarChar, -1).Value = rawMessage;
         command.Parameters.Add("@received_at", SqlDbType.DateTimeOffset).Value = receivedAt;
         command.Parameters.Add("@parse_status", SqlDbType.NVarChar, 50).Value = parseStatus;

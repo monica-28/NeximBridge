@@ -36,12 +36,12 @@ public static class PdErrorParser
                 throw new NeximMessageParseException($"PDERROR: registro {i} debe contener exactamente 12 campos.");
             details.Add(new PdErrorDetail(Number(fields[0], "StageNo"), Number(fields[1], "SlotNo"),
                 Text(fields[2], "PartName"), Text(fields[3], "AVLName"), Number(fields[4], "HeadNo"),
-                Number(fields[5], "HolderNo"), Number(fields[6], "NozzleNo"), Number(fields[7], "NozzlePitNo"),
+                Number(fields[5], "HolderNo"), FujiDomain.Range(Number(fields[6], "NozzleNo"), 1, 4, "NozzleNo"), FujiDomain.Range(Number(fields[7], "NozzlePitNo"), 1, 32, "NozzlePitNo"),
                 Number(fields[8], "BoardNo"), Text(fields[9], "Reference"),
                 ErrorCode(fields[10], "ErrorCode"), ErrorCode(fields[11], "SubErrorCode")));
         }
         return new PdErrorData(time, Text(header[3], "LineName"), Text(header[4], "MachineName"),
-            Number(header[5], "ModuleNo"), Number(header[6], "LaneNo"), Text(header[7], "ProgramName"), details);
+            Number(header[5], "ModuleNo"), FujiDomain.Range(Number(header[6], "LaneNo"), 1, 2, "LaneNo"), Text(header[7], "ProgramName"), details);
     }
 
     private static int Number(string value, string field)

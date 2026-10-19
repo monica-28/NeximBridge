@@ -114,27 +114,10 @@ public sealed class Worker(
                         continue;
                     }
 
-                    if (string.IsNullOrWhiteSpace(message.SeqID))
-                    {
-                        throw new NeximMessageParseException(
-                            "KEEPALIVE debe contener un SeqID para poder responder.");
-                    }
-
-                    await repository.InsertRawEvent(
-                        message.EventName,
-                        message.SeqID,
-                        message.RawMessage,
-                        DateTimeOffset.UtcNow,
-                        "OK",
-                        stoppingToken);
-
-                    byte[] acknowledgement = keepAliveAckBuilder.Build(message.SeqID);
-                    await networkStream.WriteAsync(acknowledgement, stoppingToken);
-                    await networkStream.FlushAsync(stoppingToken);
-
-                    logger.LogInformation(
-                        "KEEPALIVE recibido y confirmado con SeqID {SeqID}.",
-                        message.SeqID);
+                    await keepAliveAckBuilder.RespondAsync(networkStream, rawMessage,
+                        token => repository.InsertRawEvent(message.EventName, message.SeqID,
+                            message.RawMessage, DateTimeOffset.UtcNow, "OK", token),
+                        logger, stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {

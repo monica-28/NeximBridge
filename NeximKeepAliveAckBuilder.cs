@@ -1,36 +1,42 @@
-using System.Buffers.Binary;
-using System.Text;
-
 namespace NeximBridge;
 
 public sealed class NeximKeepAliveAckBuilder
 {
-    private const byte Stx = 0x02;
-    private const byte Etx = 0x03;
-    private const char FieldSeparator = '\t';
-    private const string EventName = "KEEPALIVE_ACK";
-
     public byte[] Build(string seqId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(seqId);
+        NeximInitializationProtocol.ValidateSequence(seqId);
+        return NeximInitializationProtocol.Frame($"KEEPALIVE_ACK\t{seqId}");
+    }
 
-        if (seqId.Contains(FieldSeparator) || seqId.Contains((char)Stx) || seqId.Contains((char)Etx))
+    public static string Validate(string rawMessage)
+    {
+        string[] fields = rawMessage.Split('\t');
+        if (fields.Length != 2 || fields[0] != "KEEPALIVE" || rawMessage.Contains('\r') || rawMessage.Contains('\n'))
+            throw new NeximMessageParseException("KEEPALIVE requiere exactamente dos campos TAB, sin CR ni LF.");
+        try { NeximInitializationProtocol.ValidateSequence(fields[1]); }
+        catch (ArgumentException error) { throw new NeximMessageParseException("KEEPALIVE: SeqID invalido.", error); }
+        return fields[1];
+    }
+
+    public async Task RespondAsync(Stream stream, string rawMessage,
+        Func<CancellationToken, Task> persist, ILogger logger, CancellationToken stoppingToken)
+    {
+        string seqId = Validate(rawMessage);
+        await stream.WriteAsync(Build(seqId), stoppingToken);
+        await stream.FlushAsync(stoppingToken);
+        logger.LogInformation("KEEPALIVE recibido y confirmado con SeqID {SeqID}.", seqId);
+        using CancellationTokenSource deadline = new(TimeSpan.FromSeconds(5));
+        try
         {
-            throw new ArgumentException(
-                "SeqID no puede contener TAB, STX ni ETX.",
-                nameof(seqId));
+            Task persistence = persist(deadline.Token);
+            // Bound reception even if an underlying provider is slow to honour cancellation.
+            _ = persistence.ContinueWith(task => { _ = task.Exception; }, CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            await persistence.WaitAsync(deadline.Token);
         }
-
-        byte[] messageBytes = Encoding.UTF8.GetBytes(
-            $"{EventName}{FieldSeparator}{seqId}");
-        int payloadLength = checked(messageBytes.Length + 2);
-        byte[] frame = new byte[sizeof(int) + payloadLength];
-
-        BinaryPrimitives.WriteInt32BigEndian(frame.AsSpan(0, sizeof(int)), payloadLength);
-        frame[sizeof(int)] = Stx;
-        messageBytes.CopyTo(frame, sizeof(int) + 1);
-        frame[^1] = Etx;
-
-        return frame;
+        catch (Exception error)
+        {
+            logger.LogWarning(error, "No se pudo persistir KEEPALIVE SeqID={SeqID}; ACK ya enviado.", seqId);
+        }
     }
 }

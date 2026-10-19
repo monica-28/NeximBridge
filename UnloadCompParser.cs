@@ -33,7 +33,7 @@ public static class UnloadCompParser
                 Text(fields[3], "FeederID"),
                 Text(fields[4], "ReelID"),
                 Number(fields[5], "Quantity"),
-                Number(fields[6], "RemainingTime"));
+                FujiDomain.Range(Number(fields[6], "RemainingTime"), 10, 999999, "RemainingTime"));
             details.Add(detail);
         }
         return new(time, line, machine, module, details.AsReadOnly());

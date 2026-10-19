@@ -22,9 +22,9 @@ public static class ProdCompletedIIParser
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTimeOffset time))
             throw new NeximMessageParseException("PRODCOMPLETEDII: Time debe ser yyyyMMddHHmmss en UTC.");
         return new ProdCompletedIIData(time, Text(fields[3], "LineName"), Text(fields[4], "MachineName"),
-            Number(fields[5], "ModuleNo"), Number(fields[6], "LaneNo"), Number(fields[7], "ProductMode"),
-            Text(fields[8], "ProgramName"), Text(fields[9], "PanelNo"), Number(fields[10], "BlockCount"),
-            Number(fields[11], "BlockSkipCount"), Text(fields[12], "BSInfoBit"), Number(fields[13], "CycleTime"));
+            Number(fields[5], "ModuleNo"), FujiDomain.Range(Number(fields[6], "LaneNo"), 1, 2, "LaneNo"), FujiDomain.Range(Number(fields[7], "ProductMode"), 0, 1, "ProductMode"),
+            Text(fields[8], "ProgramName"), Text(fields[9], "PanelNo"), FujiDomain.Range(Number(fields[10], "BlockCount"), 0, 9999, "BlockCount"),
+            FujiDomain.Range(Number(fields[11], "BlockSkipCount"), 0, 9999, "BlockSkipCount"), FujiDomain.Hex(Text(fields[12], "BSInfoBit")), Number(fields[13], "CycleTime"));
     }
 
     private static int Number(string value, string field)
